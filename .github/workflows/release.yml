@@ -30,6 +30,7 @@ jobs:
         run: |
             mkdir release
             xcopy BorderlessGaming\bin\Release\* release\ /E /H /C /I
+            powershell Compress-Archive -Path "Languages\*.lang" -DestinationPath "release\Languages.zip" -Force
             powershell Compress-Archive -Path release\* -DestinationPath BorderlessGaming.zip -Force
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
