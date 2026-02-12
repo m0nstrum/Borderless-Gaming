@@ -1,0 +1,39 @@
+name: Build and Release Borderless Gaming
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3
+
+      - name: Restore NuGet packages
+        run: msbuild BorderlessGaming.sln /t:Restore
+
+      - name: Build Release
+        run: msbuild BorderlessGaming.sln `
+              /p:Configuration=Release `
+              /p:Platform="Any CPU" `
+              /p:PostBuildEvent="" `
+              /p:RunPostBuildEvent=Never
+      - name: Prepare release folder
+        run: |
+            mkdir release
+            xcopy BorderlessGaming\bin\Release\* release\ /E /H /C /I
+            powershell Compress-Archive -Path release\* -DestinationPath BorderlessGaming.zip -Force
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: BorderlessGaming.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
